@@ -1,1 +1,58 @@
-data/**
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.eggs/
+dist/
+build/
+develop-eggs/
+parts/
+wheels/
+var/
+*.egg-info/
+.installed.cfg
+*.manifest
+
+# Environments
+.venv/
+venv/
+env/
+virtualenv/
+ENV/
+.virtualenv/
+*.log
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.json
+*.log
+.pytest_cache/
+
+# mypy
+mypy-report/
+mypy_report/
+.dmypy.json
+dmypy.json
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*~
+tmp/

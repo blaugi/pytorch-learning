@@ -152,8 +152,8 @@ def visualize_classification(model, data, label):
 
     # Let's make use of a lot of operations we have learned above
     model.to(device)
-    c0 = torch.Tensor(to_rgba("C0")).to(device)
-    c1 = torch.Tensor(to_rgba("C1")).to(device)
+    c0 = torch.Tensor(to_rgba("C0")).to(device) # type: ignore
+    c1 = torch.Tensor(to_rgba("C1")).to(device) # type: ignore
     x1 = torch.arange(-0.5, 1.5, step=0.01, device=device)
     x2 = torch.arange(-0.5, 1.5, step=0.01, device=device)
     xx1, xx2 = torch.meshgrid(x1, x2, indexing='ij')  # Meshgrid function as in numpy

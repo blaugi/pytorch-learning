@@ -277,8 +277,6 @@ class Linear(Layer):
         """
         Initialize linear layer with proper weight initialization.
 
-        TODO: Initialize weights and bias with Xavier initialization
-
         APPROACH:
         1. Create weight matrix (in_features, out_features) with Xavier scaling
         2. Create bias vector (out_features,) initialized to zeros if bias=True
@@ -300,20 +298,19 @@ class Linear(Layer):
         self.in_features = in_features
         self.out_features = out_features
 
-        # Xavier/Glorot initialization for stable gradients
-        scale = np.sqrt(XAVIER_SCALE_FACTOR / in_features)
-        weight_data = np.random.randn(in_features, out_features) * scale
-        self.weight = Tensor(weight_data, requires_grad=True)
+        scale = np.sqrt(1/in_features)
+        weights = np.random.randn(in_features, out_features) *  scale
+        self.weight =  Tensor(weights)
 
-        # Initialize bias to zeros or None
         if bias:
-            bias_data = np.zeros(out_features)
-            self.bias = Tensor(bias_data, requires_grad=True)
+            self.bias = np.zeros(out_features)
         else:
             self.bias = None
-        ### END SOLUTION
 
-    def forward(self, x):
+
+		### END SOLUTION
+
+    def forward(self, x:Tensor):
         """
         Forward pass through linear layer.
 
@@ -337,15 +334,11 @@ class Linear(Layer):
         - Broadcasting automatically handles bias addition
         """
         ### BEGIN SOLUTION
-        # Linear transformation: y = xW
-        output = x.matmul(self.weight)
-
-        # Add bias if present
+        data = x.matmul(self.weight)
         if self.bias is not None:
-            output = output + self.bias
-
-        return output
-        ### END SOLUTION
+            data += self.bias 
+        return data
+		### END SOLUTION
 
     def parameters(self):
         """
@@ -377,7 +370,7 @@ class Linear(Layer):
         if self.bias is not None:
             params.append(self.bias)
         return params
-        ### END SOLUTION
+		### END SOLUTION
 
     def __repr__(self):
         """String representation for debugging."""
@@ -578,7 +571,6 @@ class Dropout(Layer):
         """
         Initialize dropout layer.
 
-        TODO: Store dropout probability and validate range
 
         APPROACH:
         1. Validate p is between 0.0 and 1.0 (inclusive)
@@ -600,7 +592,8 @@ class Dropout(Layer):
         """
         ### BEGIN SOLUTION
         if not DROPOUT_MIN_PROB <= p <= DROPOUT_MAX_PROB:
-            raise ValueError(f"Dropout probability must be between {DROPOUT_MIN_PROB} and {DROPOUT_MAX_PROB}, got {p}")
+            raise(ValueError(f"P value must be between {DROPOUT_MIN_PROB} and {DROPOUT_MAX_PROB}, got {p}")) 
+
         self.p = p
         ### END SOLUTION
 
@@ -633,26 +626,23 @@ class Dropout(Layer):
         """
         ### BEGIN SOLUTION
         if not training or self.p == DROPOUT_MIN_PROB:
-            # During inference or no dropout, pass through unchanged
             return x
-
+        
         if self.p == DROPOUT_MAX_PROB:
-            # Drop everything
             return Tensor(np.zeros_like(x.data))
 
-        # During training, apply dropout
         keep_prob = 1.0 - self.p
+        mask = np.random.random_sample(x.shape) < keep_prob
 
-        # Create random mask: True where we keep elements
-        mask = np.random.random(x.data.shape) < keep_prob
-
-        # Apply mask and scale
         mask_tensor = Tensor(mask.astype(np.float32))
         scale = Tensor(np.array(1.0 / keep_prob))
 
         # Use Tensor operations: x * mask * scale
         output = x * mask_tensor * scale
         return output
+
+
+        
         ### END SOLUTION
 
     def __call__(self, x, training=True):

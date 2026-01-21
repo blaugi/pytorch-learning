@@ -185,7 +185,7 @@ modules/HASATTR_*.md
 
 # Generated notebooks (built from src/*.py source files)
 # The modules/ directory contains generated notebooks for learners
-# modules/*
+modules/*
 !modules/README.md
 
 # Generated website module docs (copied from src/*/ABOUT.md during build)

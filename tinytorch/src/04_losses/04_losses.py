@@ -292,19 +292,10 @@ def log_softmax(x: Tensor, dim: int = -1) -> Tensor:
     HINT: Use np.max(x.data, axis=dim, keepdims=True) to preserve dimensions
     """
     ### BEGIN SOLUTION
-    # Step 1: Find max along dimension for numerical stability
-    max_vals = np.max(x.data, axis=dim, keepdims=True)
-
-    # Step 2: Subtract max to prevent overflow
-    shifted = x.data - max_vals
-
-    # Step 3: Compute log(sum(exp(shifted)))
-    log_sum_exp = np.log(np.sum(np.exp(shifted), axis=dim, keepdims=True))
-
-    # Step 4: Return log_softmax = input - max - log_sum_exp
-    result = x.data - max_vals - log_sum_exp
-
-    return Tensor(result)
+    max_value = x.max(axis=dim, keepdims=True)
+    tensor_shifted = x - max_value
+    log_sum_exp = np.log(np.sum(np.exp(tensor_shifted.data), axis=dim, keepdims=True))
+    return x - max_value - log_sum_exp
     ### END SOLUTION
 
 # %% nbgrader={"grade": true, "grade_id": "test_log_softmax", "locked": true, "points": 10}
@@ -433,15 +424,11 @@ class MSELoss:
         """
         ### BEGIN SOLUTION
         # Step 1: Compute element-wise difference
-        diff = predictions.data - targets.data
+        diff = predictions - targets
+        square = np.power(diff.data, 2)
+        mse = Tensor(np.mean(square))
 
-        # Step 2: Square the differences
-        squared_diff = diff ** 2
-
-        # Step 3: Take mean across all elements
-        mse = np.mean(squared_diff)
-
-        return Tensor(mse)
+        return mse
         ### END SOLUTION
 
     def __call__(self, predictions: Tensor, targets: Tensor) -> Tensor:
@@ -609,17 +596,11 @@ class CrossEntropyLoss:
         - Return negative mean: -np.mean(selected_log_probs)
         """
         ### BEGIN SOLUTION
-        # Step 1: Compute log-softmax for numerical stability
-        log_probs = log_softmax(logits, dim=-1)
+        log_probs= log_softmax(logits, dim=-1)
 
-        # Step 2: Select log-probabilities for correct classes
         batch_size = logits.shape[0]
         target_indices = targets.data.astype(int)
-
-        # Select correct class log-probabilities using advanced indexing
         selected_log_probs = log_probs.data[np.arange(batch_size), target_indices]
-
-        # Step 3: Return negative mean (cross-entropy is negative log-likelihood)
         cross_entropy = -np.mean(selected_log_probs)
 
         return Tensor(cross_entropy)
@@ -816,10 +797,9 @@ class BinaryCrossEntropyLoss:
 
         # Step 2: Compute binary cross-entropy
         # BCE = -(targets * log(preds) + (1-targets) * log(1-preds))
-        log_preds = np.log(clamped_preds)
-        log_one_minus_preds = np.log(1 - clamped_preds)
-
-        bce_per_sample = -(targets.data * log_preds + (1 - targets.data) * log_one_minus_preds)
+        bce_1 = targets.data * np.log(clamped_preds.data)
+        bce_2 = (np.array(1) - targets.data) * (np.log(np.array(1) - clamped_preds.data))
+        bce_per_sample = -(bce_1 + bce_2)
 
         # Step 3: Return mean across all samples
         bce_loss = np.mean(bce_per_sample)
